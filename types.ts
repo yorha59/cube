@@ -15,7 +15,10 @@ export interface PieceState {
   };
 }
 
-export type Move = 'U' | 'D' | 'L' | 'R' | 'F' | 'B' | "U'" | "D'" | "L'" | "R'" | "F'" | "B'";
+// 补全中间层指令：M (X轴中), E (Y轴中), S (Z轴中)
+export type Move = 
+  | 'U' | 'D' | 'L' | 'R' | 'F' | 'B' | 'M' | 'E' | 'S'
+  | "U'" | "D'" | "L'" | "R'" | "F'" | "B'" | "M'" | "E'" | "S'";
 
 export interface CubeState {
   pieces: PieceState[];

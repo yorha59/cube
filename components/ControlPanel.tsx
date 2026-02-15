@@ -11,104 +11,150 @@ interface ControlPanelProps {
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({ onMove, onScramble, onReset, isRotating, lastMove }) => {
-  const MoveButton = ({ move, color, text, label }: { move: Move; color: string; text: string; label?: string }) => {
+  
+  const ArrowIcon = ({ move }: { move: Move }) => {
+    const isInverse = move.includes("'");
+    const m = move.charAt(0);
+    
+    // Horizontal
+    if (['U', 'E', 'D'].includes(m)) {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`w-4 h-4 transition-transform duration-300 ${isInverse ? '' : 'rotate-180'}`}>
+          <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+      );
+    }
+    // Vertical
+    if (['L', 'M', 'R'].includes(m)) {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`w-4 h-4 transition-transform duration-300 ${isInverse ? 'rotate-180' : ''}`}>
+          <path d="M12 5v14M5 12l7 7 7-7" />
+        </svg>
+      );
+    }
+    // Depth (Z) - Circles
+    return (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={`w-4 h-4 transition-transform duration-300 ${isInverse ? 'scale-x-[-1]' : ''}`}>
+        <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+        <path d="M21 3v5h-5" />
+      </svg>
+    );
+  };
+
+  const MoveButton = ({ move, color, text }: { move: Move; color: string; text: string }) => {
     const isActive = lastMove === move;
     const isInverse = move.includes("'");
+    const baseKey = move.charAt(0);
+    
     return (
       <button
         disabled={isRotating}
         onClick={() => onMove(move)}
         className={`
-          relative flex-1 h-12 flex flex-col items-center justify-center rounded-xl transition-all duration-75
-          ${isActive ? 'translate-y-1 scale-95 shadow-inner' : 'hover:-translate-y-0.5 active:translate-y-1 active:scale-95 shadow-md'}
-          ${isRotating ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-          ${isInverse ? 'bg-gray-800 text-gray-400 border-b-2 border-gray-950' : `${color} ${text} border-b-2 border-black/20`}
+          relative flex-1 h-12 flex items-center justify-center rounded-xl transition-all duration-150 group overflow-hidden
+          ${isActive ? 'scale-90 shadow-inner brightness-75' : 'hover:scale-102 hover:brightness-110 active:scale-95 shadow-md'}
+          ${isRotating ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
+          ${isInverse ? 'bg-slate-800 text-slate-300 border border-slate-700' : `${color} ${text} border border-black/10`}
         `}
       >
-        <span className="text-xs font-black">{move}</span>
-        <span className="text-[8px] opacity-60 uppercase font-bold">{isInverse ? 'Inv' : 'Clock'}</span>
+        <div className="flex flex-col items-center gap-0.5">
+          <ArrowIcon move={move} />
+          <div className="flex items-center gap-1">
+             <span className="text-[10px] font-black tracking-tighter">{move}</span>
+             <span className={`text-[7px] font-bold px-1 rounded bg-black/10 flex items-center h-3 border border-black/5`}>
+               {isInverse ? `⇧${baseKey}` : baseKey}
+             </span>
+          </div>
+        </div>
+        
+        {/* Hover Highlight */}
+        <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-5 transition-opacity" />
       </button>
     );
   };
 
-  const AxisSection = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
-    <div className="flex flex-col gap-3 bg-white/5 p-4 rounded-2xl border border-white/5 flex-1 min-w-[120px]">
-      <div className="flex items-center justify-center gap-2 mb-1 border-b border-white/10 pb-2">
-        <span className="text-[14px]">{icon}</span>
-        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{title}</span>
+  const AxisSection = ({ title, icon, children }: { title: string; icon: string; children?: React.ReactNode }) => (
+    <div className="flex flex-col gap-2.5 bg-white/[0.03] p-3 rounded-2xl border border-white/5 flex-1 min-w-[160px]">
+      <div className="flex items-center justify-between px-1 border-b border-white/5 pb-1 mb-1">
+        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{title}</span>
+        <span className="text-sm opacity-60">{icon}</span>
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
         {children}
       </div>
     </div>
   );
 
   return (
-    <div className="bg-[#12121e]/90 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)]">
-      {/* 标题栏 */}
-      <div className="flex justify-between items-center mb-6 px-2">
-        <div className="flex flex-col">
-          <span className="text-[10px] text-blue-400 font-black tracking-[0.3em] uppercase">Control Matrix</span>
-          <span className="text-[9px] text-gray-600 font-mono mt-1">AXIS-BASED OPERATIONS</span>
+    <div className="flex flex-col md:flex-row gap-4">
+      {/* Y Axis */}
+      <AxisSection title="Horiz (Y)" icon="↔️">
+        <div className="flex gap-2">
+          <MoveButton move="U" color="bg-slate-100" text="text-slate-900" />
+          <MoveButton move="U'" color="bg-slate-100" text="text-slate-900" />
         </div>
-        <kbd className="px-3 py-1 bg-white/5 rounded-lg text-[9px] text-gray-500 font-mono border border-white/5">
-          Shift + Key = ↺
-        </kbd>
-      </div>
+        <div className="flex gap-2">
+          <MoveButton move="E" color="bg-slate-600" text="text-white" />
+          <MoveButton move="E'" color="bg-slate-600" text="text-white" />
+        </div>
+        <div className="flex gap-2">
+          <MoveButton move="D" color="bg-amber-400" text="text-slate-900" />
+          <MoveButton move="D'" color="bg-amber-400" text="text-slate-900" />
+        </div>
+      </AxisSection>
 
-      <div className="flex flex-col md:flex-row gap-4">
-        {/* Y 轴 - 垂直方向 (上下) */}
-        <AxisSection title="Vertical (Y)" icon="↕️">
-          <div className="flex gap-2">
-            <MoveButton move="U" color="bg-white" text="text-black" />
-            <MoveButton move="U'" color="bg-white" text="text-black" />
-          </div>
-          <div className="flex gap-2">
-            <MoveButton move="D" color="bg-yellow-400" text="text-black" />
-            <MoveButton move="D'" color="bg-yellow-400" text="text-black" />
-          </div>
-        </AxisSection>
+      {/* X Axis */}
+      <AxisSection title="Vert (X)" icon="↕️">
+        <div className="flex gap-2">
+          <MoveButton move="L" color="bg-orange-500" text="text-white" />
+          <MoveButton move="L'" color="bg-orange-500" text="text-white" />
+        </div>
+        <div className="flex gap-2">
+          <MoveButton move="M" color="bg-slate-600" text="text-white" />
+          <MoveButton move="M'" color="bg-slate-600" text="text-white" />
+        </div>
+        <div className="flex gap-2">
+          <MoveButton move="R" color="bg-rose-600" text="text-white" />
+          <MoveButton move="R'" color="bg-rose-600" text="text-white" />
+        </div>
+      </AxisSection>
 
-        {/* X 轴 - 水平方向 (左右) */}
-        <AxisSection title="Horizontal (X)" icon="↔️">
-          <div className="flex gap-2">
-            <MoveButton move="L" color="bg-orange-500" text="text-white" />
-            <MoveButton move="L'" color="bg-orange-500" text="text-white" />
-          </div>
-          <div className="flex gap-2">
-            <MoveButton move="R" color="bg-red-600" text="text-white" />
-            <MoveButton move="R'" color="bg-red-600" text="text-white" />
-          </div>
-        </AxisSection>
+      {/* Z Axis */}
+      <AxisSection title="Depth (Z)" icon="⊙">
+        <div className="flex gap-2">
+          <MoveButton move="F" color="bg-emerald-600" text="text-white" />
+          <MoveButton move="F'" color="bg-emerald-600" text="text-white" />
+        </div>
+        <div className="flex gap-2">
+          <MoveButton move="S" color="bg-slate-600" text="text-white" />
+          <MoveButton move="S'" color="bg-slate-600" text="text-white" />
+        </div>
+        <div className="flex gap-2">
+          <MoveButton move="B" color="bg-indigo-600" text="text-white" />
+          <MoveButton move="B'" color="bg-indigo-600" text="text-white" />
+        </div>
+      </AxisSection>
 
-        {/* Z 轴 - 深度方向 (前后) */}
-        <AxisSection title="Depth (Z)" icon="⊙">
-          <div className="flex gap-2">
-            <MoveButton move="F" color="bg-green-600" text="text-white" />
-            <MoveButton move="F'" color="bg-green-600" text="text-white" />
-          </div>
-          <div className="flex gap-2">
-            <MoveButton move="B" color="bg-blue-600" text="text-white" />
-            <MoveButton move="B'" color="bg-blue-600" text="text-white" />
-          </div>
-        </AxisSection>
-      </div>
-
-      <div className="flex gap-4 mt-8">
-        <button
+      {/* Global Actions */}
+      <div className="flex flex-col gap-3 min-w-[140px] justify-center ml-2 border-l border-white/5 pl-4">
+         <button
           onClick={onScramble}
           disabled={isRotating}
-          className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black rounded-2xl border-b-4 border-blue-900 transition-all active:translate-y-1 active:border-b-0 uppercase tracking-widest shadow-lg shadow-blue-900/20"
+          className="group relative py-3 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black rounded-xl border-b-4 border-blue-900 transition-all active:translate-y-1 active:border-b-0 uppercase tracking-widest shadow-lg overflow-hidden"
         >
-          Auto Scramble
+          <span className="relative z-10">Scramble</span>
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
         <button
           onClick={onReset}
           disabled={isRotating}
-          className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white text-[10px] font-black rounded-2xl border-b-4 border-black/40 transition-all active:translate-y-1 active:border-b-0 uppercase tracking-widest"
+          className="group relative py-3 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-[10px] font-black rounded-xl border-b-4 border-black/40 transition-all active:translate-y-1 active:border-b-0 uppercase tracking-widest border border-white/5"
         >
-          Reset
+          <span className="relative z-10">Reset Cube</span>
         </button>
+        <div className="mt-2 text-[8px] text-slate-600 font-bold uppercase text-center tracking-tighter italic">
+          Tip: Use SHIFT + KEY for inverse
+        </div>
       </div>
     </div>
   );
