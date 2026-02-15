@@ -1,0 +1,5 @@
+{
+  "name": "3D 智力魔方",
+  "description": "一个功能齐全的交互式三阶魔方模拟器，支持 3D 旋转、公式转动、自动打乱以及基于 Gemini AI 的解法建议。",
+  "requestFramePermissions": []
+}
